@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/12 12:59:02 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/19 18:13:12 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/23 14:35:54 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ void	char_to_signal(unsigned char character, pid_t pid)
 	int	bit;
 
 	i = 0;
-	printf("sending %c to server...\n", character);
 	while (i < 8)
 	{
 		bit = 1 & character;
@@ -32,7 +31,7 @@ void	char_to_signal(unsigned char character, pid_t pid)
 			kill(pid, SIGUSR2);
 		character = character >> 1;
 		i++;
-		usleep(1000);
+		usleep(50);
 	}
 }
 
@@ -40,10 +39,16 @@ static t_data	*parse_arguments(char **arguments)
 {
 	t_data	*data;
 
+	data = malloc(sizeof(t_data));
+	if (data == NULL)
+		exit(EXIT_FAILURE);
 	data->server_pid = ft_atoi(arguments[1]);
 	data->string_to_send = ft_strdup(arguments[2]);
 	if (data->string_to_send == NULL)
+	{
+		free(data);
 		exit(EXIT_FAILURE);
+	}
 	data->string_to_send_len = ft_strlen(data->string_to_send);
 	return (data);
 }
@@ -56,11 +61,14 @@ int	main(int argc, char **argv)
 	if (argc != 3)
 		return (EXIT_FAILURE);
 	data = parse_arguments(argv);
+	char_to_signal(data->string_to_send_len, data->server_pid);
 	i = 0;
-	while (i < data->string_to_send)
+	while (data->string_to_send[i])
 	{
 		char_to_signal(data->string_to_send[i], data->server_pid);
 		i++;
 	}
+	free(data->string_to_send);
+	free(data);
 	return (EXIT_SUCCESS);
 }
