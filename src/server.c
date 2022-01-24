@@ -25,6 +25,7 @@ static void	server_signal_handler(int sig)
 static void	init_sigaction(struct sigaction *sa)
 {
 	g_signal = 0;
+	ft_bzero(sa, sizeof(struct sigaction));
 	sa->sa_flags = SA_RESTART;
 	sa->sa_handler = &server_signal_handler;
 	sigaction(SIGUSR1, sa, NULL);
