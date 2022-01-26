@@ -5,94 +5,51 @@
 /*                                                     +:+                    */
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2022/01/20 14:02:19 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/23 15:06:29 by rvan-duy      ########   odam.nl         */
+/*   Created: 2022/01/25 17:11:39 by rvan-duy      #+#    #+#                 */
+/*   Updated: 2022/01/26 17:42:34 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include "structs.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <stdbool.h>
+#include "server.h"
 
-static void	server_signal_handler(int sig)
+static void	server_signal_handler(int sig, siginfo_t *info, void *context)
 {
-	g_signal = sig;
+	sig = g_signal;
+	(void)info;
+	(void)context;
 }
 
-static void	init_sigaction(struct sigaction *sa)
+static void	listen_for_signals(void)
 {
-	g_signal = 0;
-	ft_bzero(sa, sizeof(struct sigaction));
-	sa->sa_flags = SA_RESTART;
-	sa->sa_handler = &server_signal_handler;
-	sigaction(SIGUSR1, sa, NULL);
-	sigaction(SIGUSR2, sa, NULL);
-}
+	static t_server_data	data;
 
-static void	reset_signal_vars(t_signal_variables *signal_vars)
-{
-	signal_vars->current_bit = 1;
-	signal_vars->current_char = 0;
-	signal_vars->string_allocated = false;
-	signal_vars->string_len = 0;
-	signal_vars->i = 0;
-}
-
-static char	*allocate_string(t_signal_variables *signal_vars)
-{
-	char	*new_str;
-
-	signal_vars->string_len = signal_vars->current_char;
-	new_str = malloc(sizeof(char) * signal_vars->string_len);
-	if (new_str == NULL)
-		exit(EXIT_FAILURE);
-	new_str[signal_vars->string_len] = '\0';
-	signal_vars->string_allocated = true;
-	return (new_str);
-}
-
-// split up in more functions, make this readable
-static void	process_signal(void)
-{
-	static t_signal_variables	signal_vars = {1, 0, false, 0, 0};
-	static char					*string_to_receive;
-
-	if (g_signal == SIGUSR1)
-		signal_vars.current_char += signal_vars.current_bit;
-	signal_vars.current_bit *= 2;
-	if (signal_vars.current_bit > 128)
+	ft_bzero(&data, sizeof(t_server_data));
+	data.current_bit = 1;
+	data.current_index = 0;
+	while (1)
 	{
-		if (signal_vars.string_allocated == false)
-			string_to_receive = allocate_string(&signal_vars);
-		else
-			string_to_receive[signal_vars.i++] = signal_vars.current_char;
-		signal_vars.current_bit = 1;
-		signal_vars.current_char = 0;
+		if (g_signal == SIGNAL_BIT_1)
+			data.buffer[data.current_index] += data.current_bit;
+		data.current_bit *= 2;
+		if (data.current_bit > 128)
+		{
+			data.current_bit = 1;
+		}
+		pause();
 	}
-	if (signal_vars.i == signal_vars.string_len
-		&& signal_vars.string_allocated == true)
-	{
-		ft_putendl_fd(string_to_receive, STDOUT_FILENO);
-		free(string_to_receive);
-		reset_signal_vars(&signal_vars);
-	}
-	g_signal = 0;
 }
 
 int	main(void)
 {
 	struct sigaction	sa;
 
-	init_sigaction(&sa);
+	ft_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = &server_signal_handler;
+	sigaction(SIGNAL_BIT_1, &sa, NULL);
+	sigaction(SIGNAL_BIT_0, &sa, NULL);
 	ft_putnbr_fd(getpid(), STDOUT_FILENO);
 	ft_putchar_fd('\n', STDOUT_FILENO);
-	while (true)
-	{
-		if (g_signal == SIGUSR1 || g_signal == SIGUSR2)
-			process_signal();
-	}
+	listen_for_signals();
 	return (EXIT_SUCCESS);
 }

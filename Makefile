@@ -6,7 +6,7 @@
 #    By: rvan-duy <rvan-duy@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/01/12 13:12:43 by rvan-duy      #+#    #+#                  #
-#    Updated: 2022/01/14 12:50:48 by rvan-duy      ########   odam.nl          #
+#    Updated: 2022/01/26 15:38:47 by rvan-duy      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ FLAGS		= -Wall -Wextra -Werror
 HEADER		= -I include
 
 SRC_SERVER	= server.c
-SRC_CLIENT	= client.c
+SRC_CLIENT	= client.c client_parse.c
 
 LIBFT		= libft/libft.a
 

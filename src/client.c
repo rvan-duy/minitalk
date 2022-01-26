@@ -5,70 +5,80 @@
 /*                                                     +:+                    */
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2022/01/12 12:59:02 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/23 14:35:54 by rvan-duy      ########   odam.nl         */
+/*   Created: 2022/01/25 17:11:41 by rvan-duy      #+#    #+#                 */
+/*   Updated: 2022/01/26 17:27:30 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-#include "structs.h"
+#include "client.h"
+
 #include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
 
-void	char_to_signal(unsigned char character, pid_t pid)
+static void	client_signal_handler(int sig, siginfo_t *info, void *context)
 {
-	int	i;
-	int	bit;
+	sig = g_signal;
+	(void)info;
+	(void)context;
+}
 
-	i = 0;
-	while (i < 8)
+// SIGUSR1 = 1
+// SIGUSR2 = 0
+static t_return_status	send_bit_to_pid(t_client_data *data)
+{
+	const char		current_character = data->string_to_send[data->current_index];
+	const size_t	bit_to_send = data->current_bit & current_character;
+	int				ret;
+
+	if (bit_to_send != 0)
+		ret = kill(data->server_pid, SIGUSR1);
+	else
+		ret = kill(data->server_pid, SIGUSR2);
+	if (ret == -1)
+		return (FAILED_SENDING_SIGNAL);
+	data->current_bit = data->current_bit << 1;
+	if (data->current_bit > 128)
 	{
-		bit = 1 & character;
-		if (bit == 1)
-			kill(pid, SIGUSR1);
-		else
-			kill(pid, SIGUSR2);
-		character = character >> 1;
-		i++;
-		usleep(50);
+		data->current_bit = 1;
+		data->current_index = data->current_index + 1;
+	}
+	return (FINISHED_SUCCESFULLY);
+}
+
+// sends signal to server
+// - send bit to server using sending function..?
+// waits
+// if correct send another one.. until ya know
+static void	send_starting_signal(t_client_data *data)
+{
+	const size_t	strlen = ft_strlen(data->string_to_send);
+
+	g_signal = 0;
+	send_bit_to_pid(data);
+	while (1)
+	{
+		if (g_signal == MY_SIGNAL_STOP | data->current_index >= strlen)
+			return ;
+		else if (g_signal == MY_SIGNAL_CONT)
+			send_bit_to_pid(data);
+		// pause
 	}
 }
 
-static t_data	*parse_arguments(char **arguments)
-{
-	t_data	*data;
-
-	data = malloc(sizeof(t_data));
-	if (data == NULL)
-		exit(EXIT_FAILURE);
-	data->server_pid = ft_atoi(arguments[1]);
-	data->string_to_send = ft_strdup(arguments[2]);
-	if (data->string_to_send == NULL)
-	{
-		free(data);
-		exit(EXIT_FAILURE);
-	}
-	data->string_to_send_len = ft_strlen(data->string_to_send);
-	return (data);
-}
-
+// opvangen van ret signals van server
 int	main(int argc, char **argv)
 {
-	t_data	*data;
-	size_t	i;
+	t_client_data		data;
+	struct sigaction	sa;
 
-	if (argc != 3)
-		return (EXIT_FAILURE);
-	data = parse_arguments(argv);
-	char_to_signal(data->string_to_send_len, data->server_pid);
-	i = 0;
-	while (data->string_to_send[i])
+	if (argc == 3)
 	{
-		char_to_signal(data->string_to_send[i], data->server_pid);
-		i++;
+		client_parse(&data, argv);
+		ft_bzero(&sa, sizeof(struct sigaction));
+		sa.sa_flags = SA_SIGINFO;
+		sa.sa_sigaction = &client_signal_handler;
+		sigaction(MY_SIGNAL_CONT, &sa, NULL);
+		sigaction(MY_SIGNAL_STOP, &sa, NULL);
+		send_starting_signal(&data);
 	}
-	free(data->string_to_send);
-	free(data);
 	return (EXIT_SUCCESS);
 }
