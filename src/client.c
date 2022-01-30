@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/25 17:11:41 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/26 17:27:30 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/27 14:42:29 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 static void	client_signal_handler(int sig, siginfo_t *info, void *context)
 {
-	sig = g_signal;
+	g_signal = sig;
 	(void)info;
 	(void)context;
 }
@@ -30,9 +30,15 @@ static t_return_status	send_bit_to_pid(t_client_data *data)
 	int				ret;
 
 	if (bit_to_send != 0)
+	{
+		dprintf(2, "1 ");
 		ret = kill(data->server_pid, SIGUSR1);
+	}
 	else
+	{
+		dprintf(2, "0 ");
 		ret = kill(data->server_pid, SIGUSR2);
+	}
 	if (ret == -1)
 		return (FAILED_SENDING_SIGNAL);
 	data->current_bit = data->current_bit << 1;
@@ -56,10 +62,14 @@ static void	send_starting_signal(t_client_data *data)
 	send_bit_to_pid(data);
 	while (1)
 	{
-		if (g_signal == MY_SIGNAL_STOP | data->current_index >= strlen)
+		pause();
+		if (g_signal == MY_SIGNAL_STOP || data->current_index > strlen)
 			return ;
 		else if (g_signal == MY_SIGNAL_CONT)
+		{
 			send_bit_to_pid(data);
+			// dprintf(2, "sending a bit.. %zu\n", i++);
+		}
 		// pause
 	}
 }

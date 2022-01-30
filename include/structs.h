@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/26 11:51:36 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/26 17:28:45 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/30 15:29:36 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,12 @@
 # define MY_SIGNAL_STOP SIGUSR2
 # define SIGNAL_BIT_1 SIGUSR1
 # define SIGNAL_BIT_0 SIGUSR2
+# define SIZE_OF_BUFFER 1000
 
 # include <signal.h>
 
 typedef struct s_server_data {
-	char					buffer[1000];
+	char					buffer[SIZE_OF_BUFFER];
 	size_t					current_index;
 	size_t					current_bit;
 	struct s_server_data	*next;
