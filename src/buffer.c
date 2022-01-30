@@ -6,42 +6,39 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/27 13:57:50 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/27 14:53:34 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/30 17:18:13 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "buffer.h"
+#include <stdio.h>
 
-void	buffer_print(t_server_data *data)
+void	buffer_print(char *buffer)
 {
-	while (data != NULL)
-	{
-		ft_putstr_fd(data->buffer, STDOUT_FILENO);
-		data = data->next;
-	}
+	ft_putstr_fd(buffer, STDOUT_FILENO);
 	ft_putchar_fd('\n', STDOUT_FILENO);
 }
 
-// clears all malloc'd buffers
-// resets i and bit for head to 0 and 1
-void	buffer_clear(t_server_data *data)
+char	*buffer_clear(char *buffer, size_t *current_buffer_size)
 {
-	t_server_data	*tmp;
-	t_server_data	*tmp_2;
+	char	*new_buffer;
 
-	ft_bzero(data->buffer, SIZE_OF_BUFFER);
-	tmp_2 = data;
-	if (data->next != NULL)
-	{
-		data = data->next;
-		while (data != NULL)
-		{
-			tmp = data->next;
-			free(data);
-			data = tmp;
-		}
-	}
-	ft_bzero(tmp_2, sizeof(t_server_data));
-	tmp_2->current_bit = 1;
-	tmp_2->current_index = 0;
+	free(buffer);
+	*current_buffer_size = SIZE_OF_BUFFER;
+	new_buffer = ft_calloc(SIZE_OF_BUFFER + 1, sizeof(char));
+	if (new_buffer == NULL)
+		exit(EXIT_FAILURE);
+	return (new_buffer);
+}
+
+// another idea is to just write stuff and clear buffer to re-use it
+char	*buffer_resize(char *buffer, size_t *current_buffer_size)
+{
+	char	*new_buffer;
+
+	*current_buffer_size += SIZE_OF_BUFFER;
+	new_buffer = ft_realloc(buffer, *current_buffer_size + 1, sizeof(char));
+	if (new_buffer == NULL)
+		exit(EXIT_FAILURE);
+	return (new_buffer);
 }

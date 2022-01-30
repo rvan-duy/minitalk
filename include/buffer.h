@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/27 13:59:20 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/27 14:27:37 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/30 16:50:09 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 # include "structs.h"
 # include "libft.h"
 
-void	buffer_print(t_server_data *data);
-void	buffer_clear(t_server_data *data);
+void	buffer_print(char *buffer);
+char	*buffer_clear(char *buffer, size_t *current_buffer_size);
+char	*buffer_resize(char *buffer, size_t *current_buffer_size);
 
 #endif

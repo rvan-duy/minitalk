@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/25 17:11:41 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/27 14:42:29 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/30 17:28:28 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,6 @@ static void	client_signal_handler(int sig, siginfo_t *info, void *context)
 	(void)context;
 }
 
-// SIGUSR1 = 1
-// SIGUSR2 = 0
 static t_return_status	send_bit_to_pid(t_client_data *data)
 {
 	const char		current_character = data->string_to_send[data->current_index];
@@ -30,15 +28,9 @@ static t_return_status	send_bit_to_pid(t_client_data *data)
 	int				ret;
 
 	if (bit_to_send != 0)
-	{
-		dprintf(2, "1 ");
-		ret = kill(data->server_pid, SIGUSR1);
-	}
+		ret = kill(data->server_pid, SIGNAL_BIT_1);
 	else
-	{
-		dprintf(2, "0 ");
-		ret = kill(data->server_pid, SIGUSR2);
-	}
+		ret = kill(data->server_pid, SIGNAL_BIT_0);
 	if (ret == -1)
 		return (FAILED_SENDING_SIGNAL);
 	data->current_bit = data->current_bit << 1;
@@ -50,10 +42,7 @@ static t_return_status	send_bit_to_pid(t_client_data *data)
 	return (FINISHED_SUCCESFULLY);
 }
 
-// sends signal to server
-// - send bit to server using sending function..?
-// waits
-// if correct send another one.. until ya know
+// TODO: error handling
 static void	send_starting_signal(t_client_data *data)
 {
 	const size_t	strlen = ft_strlen(data->string_to_send);
@@ -67,14 +56,13 @@ static void	send_starting_signal(t_client_data *data)
 			return ;
 		else if (g_signal == MY_SIGNAL_CONT)
 		{
+			dprintf(2, "Sending over a bit..\n");
+			usleep(1000);
 			send_bit_to_pid(data);
-			// dprintf(2, "sending a bit.. %zu\n", i++);
 		}
-		// pause
 	}
 }
 
-// opvangen van ret signals van server
 int	main(int argc, char **argv)
 {
 	t_client_data		data;
