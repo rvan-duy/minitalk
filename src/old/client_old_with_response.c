@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/25 17:11:41 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/31 17:50:03 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/31 10:52:46 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 #include <stdio.h>
 
-static void	server_signal_handler(int sig, siginfo_t *info, void *context)
+static void	client_signal_handler(int sig, siginfo_t *info, void *context)
 {
-	(void)sig;
+	g_signal = sig;
 	(void)info;
 	(void)context;
 }
@@ -46,15 +46,19 @@ static t_return_status	send_bit_to_pid(t_client_data *data)
 static void	send_starting_signal(t_client_data *data)
 {
 	const size_t	strlen = ft_strlen(data->string_to_send);
-	size_t			i;
 
-	i = 0;
-	while (i < (strlen + 1) * 8)
+	g_signal = 0;
+	send_bit_to_pid(data);
+	while (1)
 	{
-		send_bit_to_pid(data);
-		// dprintf(2, "sending bit %zu\n", i);
-		sleep(SLEEPY_TIME_SECONDS);
-		i++;
+		pause();
+		if (g_signal == MY_SIGNAL_STOP || data->current_index > strlen)
+			return ;
+		else if (g_signal == MY_SIGNAL_CONT)
+		{
+			dprintf(2, "Sending over a bit..\n");
+			send_bit_to_pid(data);
+		}
 	}
 }
 
@@ -63,13 +67,14 @@ int	main(int argc, char **argv)
 	t_client_data		data;
 	struct sigaction	sa;
 
-	ft_bzero(&sa, sizeof(struct sigaction));
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = &server_signal_handler;
-	sigaction(SIGNAL_BIT_1, &sa, NULL);
 	if (argc == 3)
 	{
 		client_parse(&data, argv);
+		ft_bzero(&sa, sizeof(struct sigaction));
+		sa.sa_flags = SA_SIGINFO;
+		sa.sa_sigaction = &client_signal_handler;
+		sigaction(MY_SIGNAL_CONT, &sa, NULL);
+		sigaction(MY_SIGNAL_STOP, &sa, NULL);
 		send_starting_signal(&data);
 	}
 	return (EXIT_SUCCESS);

@@ -6,7 +6,7 @@
 /*   By: rvan-duy <rvan-duy@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2022/01/26 11:51:36 by rvan-duy      #+#    #+#                 */
-/*   Updated: 2022/01/30 17:14:10 by rvan-duy      ########   odam.nl         */
+/*   Updated: 2022/01/31 17:45:27 by rvan-duy      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 # define MY_SIGNAL_STOP SIGUSR2
 # define SIGNAL_BIT_1 SIGUSR1
 # define SIGNAL_BIT_0 SIGUSR2
-# define SIZE_OF_BUFFER 1
+# define SIZE_OF_BUFFER 1000
+# define LAST_BIT 128
+# define SLEEPY_TIME_SECONDS 10
 
 # include <signal.h>
 

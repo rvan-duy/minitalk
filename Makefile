@@ -6,14 +6,14 @@
 #    By: rvan-duy <rvan-duy@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2022/01/12 13:12:43 by rvan-duy      #+#    #+#                  #
-#    Updated: 2022/01/27 14:07:03 by rvan-duy      ########   odam.nl          #
+#    Updated: 2022/01/31 15:05:14 by rvan-duy      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME_SERVER	= server
 NAME_CLIENT = client
 CC			= gcc
-FLAGS		= -Wall -Wextra -Werror
+FLAGS		= -Wall -Wextra -Werror -g -fsanitize=address
 HEADER		= -I include
 
 SRC_SERVER	= server.c buffer.c
